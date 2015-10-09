@@ -1,0 +1,107 @@
+body {
+  background-color: #e74c3c;
+}
+
+.logo {
+    text-align: center;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
+/* TODO: Write Media Queries for responsiveness */
+.logo a, h1 {
+    font-family: 'Pacifico', cursive;
+    text-decoration: none;
+    font-size: 4em;
+    font-weight: 100;
+    display: inline;
+    color: white;
+}
+
+.logo p {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.3em;
+    letter-spacing: 5px;
+}
+
+.search-title, .result-title {
+    color: white;
+    text-align: center;
+    margin-top: 120px;
+    font-family: 'Monda', sans-serif;
+    letter-spacing: 5px;
+    font-size: 1.7em;
+}
+
+.result-title {
+    margin-top: 50px;
+    font-size: 1.3em;
+}
+
+.typed-cursor {
+    display: none;
+}
+
+.search-box {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.search-box input {
+    background-color: #e74c3c;
+    outline: none;
+    border:none;
+    color: white;
+    font-size: 2.3em;
+    border-bottom: 1px solid white;
+    font-family: 'Inconsolata';
+    font-weight: 100;
+    text-align: center;
+    width: 70%;
+}
+
+.search-box button {
+    background-color: transparent;
+    outline: none;
+    border: 1px solid white;
+    color: white;
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.5em;
+    padding: 15px 20px;
+    margin-left: 10px;
+    font-weight: 300;
+    letter-spacing: 8px;
+}
+
+.search-box button:hover {
+    background-color: white;
+    transition: linear 0.3s;
+    color: #e74c3c;
+}
+
+.search-box h2 {
+    font-family: 'Raleway', sans-serif;
+    color: white;
+    text-decoration: none;
+}
+
+.result-table {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.result-table table {
+    text-align: center;
+    font-family: 'Inconsolata';
+    font-size: 3em;
+    margin: 0 auto;
+}
+
+#history {
+    font-size: 1.5em !important;
+}
+
+th {
+    padding-right: 70px;
+    padding-left: 65px;
+}
