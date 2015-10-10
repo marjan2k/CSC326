@@ -1,5 +1,3 @@
-
-import pprint
 # Copyright (C) 2011 by Peter Goodman
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +20,6 @@ import pprint
 
 import urllib2
 import urlparse
-import pprint
 from BeautifulSoup import *
 from collections import defaultdict
 import re
@@ -215,7 +212,9 @@ class crawler(object):
         #       font sizes (in self._curr_words), add all the words into the
         #       database for this document
 
-        # Index by doc_id for which the value is an array of all its word ids
+        # Create a new dictionary which is indexed by doc_id as the key and the
+        # value is a tuple of all the word ids that are associated with it.
+        # This dictionary will help  easily create an inverted_index later on.
         self._doc_index[self._curr_doc_id] = tuple(map(lambda x: x[0], self._curr_words))
         print "    num words="+ str(len(self._curr_words))
 
@@ -339,6 +338,10 @@ class crawler(object):
 
     def get_inverted_index(self):
         inverted_index = {}
+        # Iterate through the dictionary of doc_ids(key) which has a tuple
+        # of all the word_ids associated with it as its value and create a
+        # new dictionary where the word_id is the key and its value is a set
+        # of doc_ids that are associated with that word_id
         for (doc, words) in self._doc_index.iteritems():
             for w in words:
                 if (not w in inverted_index):
@@ -350,14 +353,21 @@ class crawler(object):
     def get_resolved_inverted_index(self):
         inverted_index = self.get_inverted_index()
 
+        # Invert the word_id cache to index by word_id instead of word name
+        # this allows us to easily resolve our word_ids in O(1)
         inverted_word_index = {
             _id: word for (word, _id) in self._word_id_cache.iteritems()
         }
 
+        # Invert the doc_id cache to index by doc_id instead of the url
+        # this allows us to easily resolve our doc_ids in O(1)
         inverted_doc_id_cache = {
             _id: doc for (doc, _id) in self._doc_id_cache.iteritems()
         }
 
+        # Resolve the word_ids to their word name and all the doc_ids to their url
+        # by creating a new key-value pair for each resolved word and set of urls
+        # for its corresponding set of doc_ids
         return {
             inverted_word_index[word]: set(map(lambda doc: inverted_doc_id_cache[doc], docs))
             for (word, docs) in inverted_index.iteritems()
@@ -367,4 +377,3 @@ class crawler(object):
 if __name__ == "__main__":
     bot = crawler(None, "urls.txt")
     bot.crawl(depth=1)
-    print bot.get_resolved_inverted_index()
