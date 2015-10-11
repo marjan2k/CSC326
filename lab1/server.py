@@ -15,7 +15,8 @@ def get_homepage():
 def get_word_count():
     count = {}
     keywords = request.query['keywords']
-    words = keywords.split()
+    words = keywords.lower().split()
+
     for word in words:
         count[word] = (count[word] if word in count else 0) + 1
         history[word] = (history[word] if word in history else 0) + 1

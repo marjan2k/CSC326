@@ -40,8 +40,5 @@
         </div>
         %end
     </div>
-    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="https://cdn.rawgit.com/mattboldt/typed.js/master/dist/typed.min.js"></script>
-    <script src="/static/app.js"></script>
   </body>
 </html>
