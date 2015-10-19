@@ -15,6 +15,10 @@ def factorize(n):
     ValueError: n cannot be 0
     >>> factorize(-6)
     [-1, 2, 3]
+    >>> factorize(225)
+    [1, 3, 3, 5, 5]
+    >>> factorize(17)
+    [1, 17]
     """
     # 0 cannot be prime factorized
     if n == 0:
@@ -25,17 +29,13 @@ def factorize(n):
     if n < 0:
         n = n * -1
 
-    while (n % 2 == 0):
-        factors.append(2)
-        n = n/2
-
-    for i in xrange(3, int(math.ceil(math.sqrt(n))), 2):
-        if (n % i == 0):
+    for i in xrange(2, int(math.ceil(math.sqrt(n)))):
+        while (n % i == 0):
             factors.append(i)
             n = n/i
 
-    # In the case n is a prime number greater than 2
-    if (n > 2):
+    # In the case n is a prime number
+    if (n > 1):
         factors.append(n)
 
     return factors
