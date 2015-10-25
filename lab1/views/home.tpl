@@ -14,7 +14,7 @@
         % if email:
             <div class="profile">
                 <img src="{{picture}}"></img>
-                <p> Nayeem Zen </p>
+                <p>{{name}}</p>
                 <a class="btn-login" id="logout" href='/logout'> Sign Out </button>
             </div>
         % end
