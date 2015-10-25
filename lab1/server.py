@@ -24,6 +24,7 @@ def serve_static(filename):
 @route('/')
 def get_homepage():
     session = bottle.request.environ.get('beaker.session')
+    print session
     # retrieve user info from session object, set to defaults if it doesn't exist
     email = session['email'] if 'email' in session else False
     picture = session['picture'] if 'picture' in session else ""
@@ -47,21 +48,23 @@ def google_auth():
     flow = flow_from_clientsecrets(
         'client_secrets.json',
         scope='https://www.googleapis.com/auth/userinfo.email',
-        redirect_uri='http://localhost:8080/redirect'
+        redirect_uri='http://ec2-52-23-183-97.compute-1.amazonaws.com:8080/redirect'
     )
     uri = flow.step1_get_authorize_url()
     return bottle.redirect(str(uri))
 
 @route('/redirect')
 def redirect():
+    print "here0"
     # Get access token via oauth2client and auth code returned by googleapis auth
     code = request.query.get('code', '')
     flow = OAuth2WebServerFlow(
         client_id='937294237328-tud9jsvdrdehdevi2clvm158lfm6vlgd.apps.googleusercontent.com',
         client_secret='fyEizCcCAr2JgqqWTVoXeye1',
         scope='https://www.googleapis.com/auth/userinfo.email',
-        redirect_uri='http://localhost:8080/redirect'
+        redirect_uri='http://ec2-52-23-183-97.compute-1.amazonaws.com:8080/redirect'
     )
+    print "here"
     credentials = flow.step2_exchange(code)
     token = credentials.id_token['sub']
     http = httplib2.Http()
@@ -101,4 +104,4 @@ def get_word_count():
 
     return template('count', picture=picture, name=name, keywords=keywords, count=count)
 
-run(app=app, host='localhost', port=8080, debug=True)
+run(app=app, host='0.0.0.0', port=8080, debug=True)
