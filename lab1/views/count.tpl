@@ -11,6 +11,13 @@
   </head>
   <body>
     <div class="logo">
+        % if len(name):
+            <div class="profile">
+                <img src="{{picture}}"></img>
+                <p> {{name}} </p>
+                <a class="btn-login" id="logout" href='/logout'> Sign Out </button>
+            </div>
+        % end
         <a href="/">Yase Search</a>
     </div>
     <div class="result-title">
@@ -30,8 +37,5 @@
           % end
       </table>
     </div>
-    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="https://cdn.rawgit.com/mattboldt/typed.js/master/dist/typed.min.js"></script>
-    <script src="/static/app.js"></script>
   </body>
 </html>

@@ -26,12 +26,13 @@ def get_homepage():
     session = bottle.request.environ.get('beaker.session')
     # retrieve user info from session object, set to defaults if it doesn't exist
     email = session['email'] if 'email' in session else False
-    picture = session['picture'] if 'picture' in session else False
+    picture = session['picture'] if 'picture' in session else ""
+    name = session['name'] if 'name' in session else ""
     # retrieve and sort the user search history
     user_history = history[email] if email in history else {}
     sorted_history = sorted(user_history.items(), reverse=True, key=lambda x: x[1])
     # render the the template with the history and user info
-    return template('home', history=sorted_history[0:20], email=email, picture=picture)
+    return template('home', history=sorted_history[0:20], email=email, name=name, picture=picture)
 
 @route('/logout')
 def logout():
@@ -83,6 +84,11 @@ def get_word_count():
     keywords = request.query['keywords']
     words = keywords.lower().split()
 
+    # retrieve user info from session object, set to defaults if it doesn't exist
+    name = session['name'] if 'name' in session else ""
+    picture = session['picture'] if 'picture' in session else ""
+
+    # create a search history on a per user basis
     local_history = {}
     if 'email' in session:
         if session['email'] not in history:
@@ -93,6 +99,6 @@ def get_word_count():
         count[word] = (count[word] if word in count else 0) + 1
         local_history[word] = (local_history[word] if word in local_history else 0) + 1
 
-    return template('count', keywords=keywords, count=count)
+    return template('count', picture=picture, name=name, keywords=keywords, count=count)
 
 run(app=app, host='localhost', port=8080, debug=True)
