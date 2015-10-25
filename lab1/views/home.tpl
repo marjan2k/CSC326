@@ -11,8 +11,16 @@
   </head>
   <body>
     <div class="logo">
-        <a href="/"> Yase Search </a>
+        % if email:
+            <div class="profile">
+                <img src="{{picture}}"></img>
+            </div>
+        % end
+        <a href="/"> Yase Search </a><br>
         <p> Made with &hearts; by Ridoy, Marjan and Zen </p>
+        % if not email:
+            <button class="btn-login" onclick="window.location.href='/auth'"> Login </button>
+        % end
     </div>
     <div class="search-title">
         <h2 id="search-title"> enter your query. </h2>
@@ -22,7 +30,7 @@
             <input name="keywords" id="search-input" autofocus></input>
             <button type="submit" id="search-btn"> SUBMIT </button>
         </form>
-        % if len(history):
+        % if len(history) and email:
         <h2> Top {{len(history)}} searched keywords </h2>
         <div class="result-table">
             <table id="history">

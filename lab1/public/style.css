@@ -60,7 +60,7 @@ body {
     width: 70%;
 }
 
-.search-box button {
+.search-box button, .btn-login {
     background-color: transparent;
     outline: none;
     border: 1px solid white;
@@ -73,10 +73,30 @@ body {
     letter-spacing: 8px;
 }
 
-.search-box button:hover {
+.search-box button:hover, .btn-login:hover {
     background-color: white;
     transition: linear 0.3s;
     color: #e74c3c;
+}
+
+.profile {
+    text-align: right;
+    margin-right: 30px;
+}
+
+.profile > img {
+    width:60px;
+    border-radius:55px;
+}
+
+.profile > button {
+    padding: 5px 10px;
+    font-size: 1em;
+}
+
+.btn-login {
+    margin-top: 30px;
+    text-align: center;
 }
 
 .search-box h2 {
