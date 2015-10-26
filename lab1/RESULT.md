@@ -100,10 +100,8 @@ Percentage of the requests served within a certain time (ms)
 <b>Maximum number of requests per second (RPS) that can be sustained by the server when operating with maximum number of connections = 156</b>
 
 
-</b>percentile of response time or latency per request:
-
+<b>percentile of response time or latency per request:
 average (50%) = 89 ms
-
 99 percentile = 405 ms</b>
 
 
