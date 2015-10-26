@@ -101,7 +101,9 @@ Percentage of the requests served within a certain time (ms)
 
 
 <b>percentile of response time or latency per request:
+
 average (50%) = 89 ms
+
 99 percentile = 405 ms</b>
 
 
