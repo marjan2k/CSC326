@@ -94,21 +94,17 @@ Percentage of the requests served within a certain time (ms)
 
 
 
-Maximum number of connections that can be handled by the server before any
-
-connection drops = 18
+<b>Maximum number of connections that can be handled by the server before any connection drops = 18</b>
 
 
-
-Maximum number of requests per second (RPS) that can be sustained by the server when operating with maximum number of connections = 156
-
+<b>Maximum number of requests per second (RPS) that can be sustained by the server when operating with maximum number of connections = 156</b>
 
 
-percentile of response time or latency per request:
+</b>percentile of response time or latency per request:
 
 average (50%) = 89 ms
 
-99 percentile = 405 ms
+99 percentile = 405 ms</b>
 
 
 
