@@ -379,26 +379,31 @@ class crawler(object):
         }
 
     def get_page_ranks(self):
-        return dict(pagerank.page_rank(bot._url_pairs))
+        return dict(pagerank.page_rank(self._url_pairs))
+
+    def persist_to_db(self, db_name="crawler"):
+        # create connection to MongoDB and create db if it doesn't exist
+        client = MongoClient()
+        client.drop_database(db_name)
+        self.db = client[db_name]
+        # persist the lexicon
+        lexicon = [{ "word": word, "word_id": id }
+            for word, id in self._word_id_cache.items()]
+        self.db.lexicon.insert_many(lexicon)
+        # persist the doc index
+        doc_index = [{ "doc_id": id, "doc": doc }
+            for doc, id in self._doc_id_cache.items()]
+        self.db.doc_index.insert_many(doc_index)
+        # persist the inverted index
+        inverted_index = [{ "word_id": word_id, "doc_id_list": list(doc_ids) }
+            for word_id, doc_ids in self.get_inverted_index().items()]
+        self.db.inverted_index.insert_many(inverted_index)
+        # persist the page ranks
+        ranks = [{ "doc_id": doc_id, "score": score }
+            for doc_id, score in self.get_page_ranks().items()]
+        self.db.page_rank.insert_many(ranks)
 
 if __name__ == "__main__":
-    client = MongoClient()
-    db = client.crawler
     bot = crawler(None, "urls.txt")
     bot.crawl(depth=1)
-    # persist the lexicon
-    lexicon = [{ "word": word, "word_id": id }
-        for word, id in bot._word_id_cache.items()]
-    db.lexicon.insert_many(lexicon)
-    # persist the doc index
-    doc_index = [{ "doc_id": id, "doc": doc }
-        for doc, id in bot._doc_id_cache.items()]
-    db.doc_index.insert_many(doc_index)
-    # persist the inverted index
-    inverted_index = [{ "word_id": word_id, "doc_id_list": list(doc_ids) }
-        for word_id, doc_ids in bot.get_inverted_index().items()]
-    db.inverted_index.insert_many(inverted_index)
-    # persist the page ranks
-    ranks = [{ "doc_id": doc_id, "score": score }
-        for doc_id, score in bot.get_page_ranks().items()]
-    db.page_rank.insert_many(ranks)
+    bot.persist_to_db()

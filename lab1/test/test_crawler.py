@@ -68,5 +68,18 @@ class TestCrawlerInvertedIndex(unittest.TestCase):
 
         self.assertEqual(self.bot.get_resolved_inverted_index(), expected)
 
+    def test_db_persistence_and_page_rank(self):
+        # mock url_pairs for page rank
+        self.bot.add_link(1, 2)
+        self.bot.add_link(2, 4)
+        self.bot.add_link(3, 2)
+        self.bot.persist_to_db(db_name="test_db")
+        # normalize database results into dictionary
+        rank = { doc['doc_id']: doc['score'] for doc in self.bot.db.page_rank.find() }
+        self.assertEqual(rank[1], rank[3])
+        self.assertGreater(rank[2], rank[1])
+        self.assertGreater(rank[2], rank[3])
+
+
 if __name__ == '__main__':
     unittest.main()
