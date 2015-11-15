@@ -1,5 +1,6 @@
 import bottle
 import httplib2
+from pymongo import MongoClient
 from bottle import run, request, route, static_file, template
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.client import flow_from_clientsecrets
@@ -16,14 +17,37 @@ session_opts = {
 
 app = SessionMiddleware(bottle.app(), session_opts)
 history = {}
-
 page_count = 0;
+conn = MongoClient()
+db = conn['crawler']
+
+def get_word_id_from_lexicon(word):
+    result = db.lexicon.find_one({ "word": word })
+    return result['word_id']
+
+def get_url_ids_from_inverted_index(word_id):
+    result = db.inverted_index.find_one({ "word_id": word_id })
+    return result['doc_id_list']
+
+def sort_using_page_rank_scores(url_ids):
+    ranks = [db.page_rank.find_one({ "doc_id": url_id }) for url_id in url_ids]
+    ranks = { rank['doc_id']: rank['score'] for rank in ranks }
+    return sorted(url_ids, reverse=True, key=lambda url_id: ranks[url_id])
+
+def resolve_urls(sorted_url_ids):
+    results = [db.doc_index.find_one({ "doc_id": url_id}) for url_id in sorted_url_ids]
+    results = [result['doc'] for result in results]
+    return results
 
 def fetch_urls(word):
-    urls = ['http://example.com/page1','http://example.com/page2','http://example.com/page3',
-            'http://example.com/page4','http://example.com/page5', 'http://example.com/page4',
-            'http://example.com/page4','http://example.com/page5', 'http://example.com/page5']
-    return urls
+    # fetch word_id for the given word (for now -> first word in the search query)
+    word_id = get_word_id_from_lexicon(word)
+    # fetch list of url ids containing the word_id from the inverted_index
+    url_ids = get_url_ids_from_inverted_index(word_id)
+    # sort url_ids using the page rank scores
+    sorted_url_ids = sort_using_page_rank_scores(url_ids)
+    # resolved the url_ids to their respective urls
+    return resolve_urls(sorted_url_ids)
 
 @route('/static/<filename>')
 def serve_static(filename):

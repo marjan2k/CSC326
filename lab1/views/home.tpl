@@ -28,7 +28,7 @@
         <h2 id="search-title"> enter your query. </h2>
     </div>
     <div class="search-box">
-        <form action="/word_count", method="GET">
+        <form action="/page", method="GET">
             <input name="keywords" id="search-input" autofocus></input>
             <button type="submit" id="search-btn"> SUBMIT </button>
         </form>
