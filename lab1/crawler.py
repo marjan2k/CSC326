@@ -20,6 +20,8 @@
 
 import urllib2
 import urlparse
+import pagerank
+from pymongo import MongoClient
 from BeautifulSoup import *
 from collections import defaultdict
 import re
@@ -44,10 +46,11 @@ class crawler(object):
     def __init__(self, db_conn, url_file):
         """Initialize the crawler with a connection to the database to populate
         and with the file containing the list of seed URLs to begin indexing."""
-        self._url_queue = [ ]
-        self._doc_id_cache = { }
-        self._word_id_cache = { }
-        self._doc_index = { };
+        self._url_queue = []
+        self._doc_id_cache = {}
+        self._word_id_cache = {}
+        self._doc_index = {}
+        self._url_pairs = []
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -179,7 +182,9 @@ class crawler(object):
     def add_link(self, from_doc_id, to_doc_id):
         """Add a link into the database, or increase the number of links between
         two pages in the database."""
-        # TODO
+        # append from_doc_id, to_doc_id pair as tuple to the list of url pairs
+        # this will be passed into page rank to calculate the rank for each url
+        self._url_pairs.append((from_doc_id, to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -373,7 +378,24 @@ class crawler(object):
             for (word, docs) in inverted_index.iteritems()
         }
 
+    def get_page_ranks(self):
+        return dict(pagerank.page_rank(bot._url_pairs))
 
 if __name__ == "__main__":
+    client = MongoClient()
+    db = client.crawler
     bot = crawler(None, "urls.txt")
     bot.crawl(depth=1)
+    # persist the lexicon
+    lexicon = [{ word: id } for word, id in bot._word_id_cache.items()]
+    db.lexicon.insert_many(lexicon)
+    # persist the doc index
+    doc_index = [{ str(id): doc } for doc, id in bot._doc_id_cache.items()]
+    db.doc_index.insert_many(doc_index)
+    # persist the inverted index
+    inverted_index = [{ str(word_id): list(doc_ids) }
+        for word_id, doc_ids in bot.get_inverted_index().items()]
+    db.inverted_index.insert_many(inverted_index)
+    # persist the page ranks
+    ranks = [{ str(url) : rank } for url, rank in bot.get_page_ranks().items()]
+    db.page_rank.insert_many(ranks)
