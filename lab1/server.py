@@ -17,6 +17,14 @@ session_opts = {
 app = SessionMiddleware(bottle.app(), session_opts)
 history = {}
 
+page_count = 0;
+
+def fetch_urls(word):
+    urls = ['http://example.com/page1','http://example.com/page2','http://example.com/page3',
+            'http://example.com/page4','http://example.com/page5', 'http://example.com/page4',
+            'http://example.com/page4','http://example.com/page5', 'http://example.com/page5']
+    return urls
+
 @route('/static/<filename>')
 def serve_static(filename):
     return static_file(filename, root='public')
@@ -103,5 +111,18 @@ def get_word_count():
         local_history[word] = (local_history[word] if word in local_history else 0) + 1
 
     return template('count', picture=picture, name=name, keywords=keywords, count=count)
+
+@route('/page', method='GET')
+def page():
+    keywords = request.query['keywords']
+    words = keywords.lower().split()
+    start = int(request.query['start']) if 'start' in request.query else 0
+    urls = fetch_urls(words[0])
+
+    original_qs = request.query_string
+    num_pages = len(urls) / 5
+    if (len(urls) % 5 != 0): num_pages += 1
+
+    return template('page1', word=words[0], urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
 
 run(app=app, host='0.0.0.0', port=8080, debug=True)
