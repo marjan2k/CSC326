@@ -23,7 +23,7 @@ db = conn['crawler']
 
 def get_word_id_from_lexicon(word):
     result = db.lexicon.find_one({ "word": word })
-    return result['word_id']
+    return result['word_id'] if result is not None else None
 
 def get_url_ids_from_inverted_index(word_id):
     result = db.inverted_index.find_one({ "word_id": word_id })
@@ -42,6 +42,8 @@ def resolve_urls(sorted_url_ids):
 def fetch_urls(word):
     # fetch word_id for the given word (for now -> first word in the search query)
     word_id = get_word_id_from_lexicon(word)
+    # if urls for the word does not exist in the db, return no results
+    if word_id is None: return []
     # fetch list of url ids containing the word_id from the inverted_index
     url_ids = get_url_ids_from_inverted_index(word_id)
     # sort url_ids using the page rank scores
@@ -136,17 +138,19 @@ def get_word_count():
 
     return template('count', picture=picture, name=name, keywords=keywords, count=count)
 
-@route('/page', method='GET')
+@route('/results', method='GET')
 def page():
     keywords = request.query['keywords']
     words = keywords.lower().split()
+    word = words[0] if len(words) > 0 else "" # Search using first word only for now
     start = int(request.query['start']) if 'start' in request.query else 0
-    urls = fetch_urls(words[0])
+    urls = fetch_urls(word)
 
-    original_qs = request.query_string
+    name = "" # TODO(Zen): Replace with user name later
+    original_qs = "keywords=" + "+".join(words)
     num_pages = len(urls) / 5
     if (len(urls) % 5 != 0): num_pages += 1
 
-    return template('page1', word=words[0], urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
+    return template('results', name=name, word=word, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
 
 run(app=app, host='0.0.0.0', port=8080, debug=True)

@@ -123,6 +123,28 @@ body {
     margin: 0 auto;
 }
 
+.results {
+    margin-left: 10%;
+    margin-top: 60px;
+}
+
+.results a {
+    text-decoration: none;
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.5em;
+    color: black;
+}
+
+.pages {
+    margin-top: 100px;
+    text-align: center;
+}
+
+.pages a {
+    color: white;
+    font-size: 1.2em;
+}
+
 #history {
     font-size: 1.5em !important;
 }
