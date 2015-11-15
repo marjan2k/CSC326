@@ -20,6 +20,8 @@
 
 import urllib2
 import urlparse
+import pagerank
+from pymongo import MongoClient
 from BeautifulSoup import *
 from collections import defaultdict
 import re
@@ -44,10 +46,11 @@ class crawler(object):
     def __init__(self, db_conn, url_file):
         """Initialize the crawler with a connection to the database to populate
         and with the file containing the list of seed URLs to begin indexing."""
-        self._url_queue = [ ]
-        self._doc_id_cache = { }
-        self._word_id_cache = { }
-        self._doc_index = { };
+        self._url_queue = []
+        self._doc_id_cache = {}
+        self._word_id_cache = {}
+        self._doc_index = {}
+        self._url_pairs = []
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -179,7 +182,9 @@ class crawler(object):
     def add_link(self, from_doc_id, to_doc_id):
         """Add a link into the database, or increase the number of links between
         two pages in the database."""
-        # TODO
+        # append from_doc_id, to_doc_id pair as tuple to the list of url pairs
+        # this will be passed into page rank to calculate the rank for each url
+        self._url_pairs.append((from_doc_id, to_doc_id))
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
@@ -373,7 +378,32 @@ class crawler(object):
             for (word, docs) in inverted_index.iteritems()
         }
 
+    def get_page_ranks(self):
+        return dict(pagerank.page_rank(self._url_pairs))
+
+    def persist_to_db(self, db_name="crawler"):
+        # create connection to MongoDB and create db if it doesn't exist
+        client = MongoClient()
+        client.drop_database(db_name)
+        self.db = client[db_name]
+        # persist the lexicon
+        lexicon = [{ "word": word, "word_id": id }
+            for word, id in self._word_id_cache.items()]
+        self.db.lexicon.insert_many(lexicon)
+        # persist the doc index
+        doc_index = [{ "doc_id": id, "doc": doc }
+            for doc, id in self._doc_id_cache.items()]
+        self.db.doc_index.insert_many(doc_index)
+        # persist the inverted index
+        inverted_index = [{ "word_id": word_id, "doc_id_list": list(doc_ids) }
+            for word_id, doc_ids in self.get_inverted_index().items()]
+        self.db.inverted_index.insert_many(inverted_index)
+        # persist the page ranks
+        ranks = [{ "doc_id": doc_id, "score": score }
+            for doc_id, score in self.get_page_ranks().items()]
+        self.db.page_rank.insert_many(ranks)
 
 if __name__ == "__main__":
     bot = crawler(None, "urls.txt")
     bot.crawl(depth=1)
+    bot.persist_to_db()
