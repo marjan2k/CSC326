@@ -387,15 +387,18 @@ if __name__ == "__main__":
     bot = crawler(None, "urls.txt")
     bot.crawl(depth=1)
     # persist the lexicon
-    lexicon = [{ word: id } for word, id in bot._word_id_cache.items()]
+    lexicon = [{ "word": word, "word_id": id }
+        for word, id in bot._word_id_cache.items()]
     db.lexicon.insert_many(lexicon)
     # persist the doc index
-    doc_index = [{ str(id): doc } for doc, id in bot._doc_id_cache.items()]
+    doc_index = [{ "doc_id": id, "doc": doc }
+        for doc, id in bot._doc_id_cache.items()]
     db.doc_index.insert_many(doc_index)
     # persist the inverted index
-    inverted_index = [{ str(word_id): list(doc_ids) }
+    inverted_index = [{ "word_id": word_id, "doc_id_list": list(doc_ids) }
         for word_id, doc_ids in bot.get_inverted_index().items()]
     db.inverted_index.insert_many(inverted_index)
     # persist the page ranks
-    ranks = [{ str(url) : rank } for url, rank in bot.get_page_ranks().items()]
+    ranks = [{ "doc_id": doc_id, "score": score }
+        for doc_id, score in bot.get_page_ranks().items()]
     db.page_rank.insert_many(ranks)
