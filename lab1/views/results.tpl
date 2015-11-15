@@ -23,7 +23,7 @@
     </div>
     <div class="result-title">
         <h2 id="result-title"> Search for "{{word}}" </h2>
-        <p> Found {{len(urls)}} results </p>
+        <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
     </div>
     <div class="results">
       % for url in urls:
@@ -34,7 +34,7 @@
     <div class="pages">
       % for i in range(num_pages):
         % link = "/results?" + qs + "&start=" + str(i * 5)
-        <a href="{{link}}"> {{i}}</a>
+        <a href="{{link}}"> {{i+1}}</a>
       % end
     </div>
 
