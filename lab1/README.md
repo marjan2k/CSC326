@@ -1,9 +1,6 @@
 # Lab 1 for CSC326
 
 ## Installing dependencies:
-Make sure you have Bottle and BeautifulSoup installed.
-If not, you can run:
-
 ```pip install -r requirements.txt```
 from the project root directory to install all required dependencies  
 

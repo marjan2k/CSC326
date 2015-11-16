@@ -1,0 +1,17 @@
+# Explanation:
+Due to more computation and network calls to the MongoDB server, the web application can support less
+max number of concurrent users and RPS. Memory utilization went up a lot, and disk i/o utilization stayed
+the same since MongoDB uses memory-mapped files for I/O, and since the benchmark was read-only, there was
+no flushing of the mem-mapped files to disk, so disk I/O stayed the same while memory utilization went up
+significantly compared to before due to larger data structures for crawled pages stored in MongoDB
+
+- Maximum number of connections that can be handled by the server before any connection drops = 9
+- Maximum number of requests per second (RPS) that can be sustained by the server when operating with maximum number of connections = 66
+
+- Percentile of response time or latency per request:
+average (50%) = 131 ms
+99 percentile = 407 ms
+
+Max % CPU Utilization  = 72%
+% Disk I/O Utiliztion = 0%
+% Memory Utilization = 88.6%
