@@ -23,7 +23,11 @@
     </div>
     <div class="result-title">
         <h2 id="result-title"> Search for "{{word}}" </h2>
-        <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
+        % if num_pages > 0:
+            <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
+        % else:
+            <p> No results found </p>
+        % end
     </div>
     <div class="results">
       % for url in urls:

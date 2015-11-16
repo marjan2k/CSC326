@@ -51,6 +51,7 @@ class crawler(object):
         self._word_id_cache = {}
         self._doc_index = {}
         self._url_pairs = []
+        self._visited_url_pairs = set()
 
         # functions to call when entering and exiting specific tags
         self._enter = defaultdict(lambda *a, **ka: self._visit_ignore)
@@ -184,7 +185,11 @@ class crawler(object):
         two pages in the database."""
         # append from_doc_id, to_doc_id pair as tuple to the list of url pairs
         # this will be passed into page rank to calculate the rank for each url
-        self._url_pairs.append((from_doc_id, to_doc_id))
+        pair = (from_doc_id, to_doc_id)
+        # avoid adding duplicated pairs into the _url
+        if (pair not in self._visited_url_pairs):
+            self._visited_url_pairs.add(pair)
+            self._url_pairs.append(pair)
 
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""

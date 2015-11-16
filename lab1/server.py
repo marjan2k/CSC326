@@ -114,29 +114,29 @@ def redirect():
     # redirect to the homepage
     return bottle.redirect('/')
 
-# @route('/word_count', method='GET')
-# def get_word_count():
-#     count = {}
-#     session = request.environ.get('beaker.session')
-#     keywords = request.query['keywords']
-#     words = keywords.lower().split()
+@route('/word_count', method='GET')
+def get_word_count():
+    count = {}
+    session = request.environ.get('beaker.session')
+    keywords = request.query['keywords']
+    words = keywords.lower().split()
 
-#     # retrieve user info from session object, set to defaults if it doesn't exist
-#     name = session['name'] if 'name' in session else ""
-#     picture = session['picture'] if 'picture' in session else ""
+    # retrieve user info from session object, set to defaults if it doesn't exist
+    name = session['name'] if 'name' in session else ""
+    picture = session['picture'] if 'picture' in session else ""
 
-#     # create a search history on a per user basis
-#     local_history = {}
-#     if 'email' in session:
-#         if session['email'] not in history:
-#             history[session['email']] = {}
-#         local_history = history[session['email']]
+    # create a search history on a per user basis
+    local_history = {}
+    if 'email' in session:
+        if session['email'] not in history:
+            history[session['email']] = {}
+        local_history = history[session['email']]
 
-#     for word in words:
-#         count[word] = (count[word] if word in count else 0) + 1
-#         local_history[word] = (local_history[word] if word in local_history else 0) + 1
+    for word in words:
+        count[word] = (count[word] if word in count else 0) + 1
+        local_history[word] = (local_history[word] if word in local_history else 0) + 1
 
-#     return template('count', picture=picture, name=name, keywords=keywords, count=count)
+    return template('count', picture=picture, name=name, keywords=keywords, count=count)
 
 @route('/results', method='GET')
 def page():
@@ -144,10 +144,10 @@ def page():
     words = keywords.lower().split()
     word = words[0] if len(words) > 0 else "" # Search using first word only for now
     start = int(request.query['start']) if 'start' in request.query else 0
-    # urls = fetch_urls(words[0])
-    urls = ['http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
-    'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
-    'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana']
+    urls = fetch_urls(word)
+    # urls = ['http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
+    # 'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
+    # 'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana']
 
     name = "" # TODO(Zen): Replace with user name later
     original_qs = "keywords=" + "+".join(words)
