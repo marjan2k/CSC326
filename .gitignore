@@ -6,6 +6,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+lab/data/
 .Python
 env/
 build/
