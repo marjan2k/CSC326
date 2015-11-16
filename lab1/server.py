@@ -1,7 +1,7 @@
 import bottle
 import httplib2
 from pymongo import MongoClient
-from bottle import run, request, route, static_file, template
+from bottle import run, request, route, static_file, template, error
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.client import flow_from_clientsecrets
 from googleapiclient.errors import HttpError
@@ -155,5 +155,13 @@ def page():
     if (len(urls) % 5 != 0): num_pages += 1
 
     return template('results', name=name, curr_page=start/5, word=word, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
+
+@error(404)
+def error404(error):
+    return """
+        <h1> This page/resource does not exist.
+             Click <a href="/">here</a> to go to the home page
+        </h1>
+    """
 
 run(app=app, host='0.0.0.0', port=8080, debug=True)
