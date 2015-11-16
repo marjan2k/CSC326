@@ -31,7 +31,9 @@
     </div>
     <div class="results">
       % for url in urls:
-         <a href="{{url}}">{{url}}</a><br>
+          <div class="result">
+              <a href="{{url}}">{{url}}</a><br>
+          </div>
     	% end
     </div>
 

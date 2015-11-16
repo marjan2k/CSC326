@@ -135,6 +135,14 @@ body {
     color: black;
 }
 
+.results a:hover {
+    color: white;
+}
+
+.result {
+    margin-bottom: 20px;
+}
+
 .pages {
     margin-top: 100px;
     text-align: center;
@@ -142,12 +150,9 @@ body {
 
 .pages a {
     color: white;
-    font-size: 1.2em;
-
-/*.result_page {
-    height: 20%;
-    width: 100%;
-}*/
+    font-size: 1.5em;
+    padding-right: 10px;
+}
 
 #history {
     font-size: 1.5em !important;
