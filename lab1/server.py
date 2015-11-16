@@ -145,10 +145,7 @@ def page():
     word = words[0] if len(words) > 0 else "" # Search using first word only for now
     start = int(request.query['start']) if 'start' in request.query else 0
     urls = fetch_urls(word)
-    # urls = ['http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
-    # 'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana',
-    # 'http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana','http://www.tunefind.com/show/banana']
-
+    
     name = "" # TODO(Zen): Replace with user name later
     original_qs = "keywords=" + "+".join(words)
     num_pages = len(urls) / 5
