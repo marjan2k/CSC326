@@ -2,7 +2,7 @@ PROFILE_FUNCTIONS = True
 PROFILE_RESULTS = {}
 
 def profile(func):
-    def profiler(*args, **kwargs):
+    def wrapper(*args, **kwargs):
         if not PROFILE_FUNCTIONS:
             func(*args, **kwargs)
         else:
@@ -22,4 +22,13 @@ def profile(func):
                 PROFILE_RESULTS[func.__name__]["avg_time"] = new_avg
                 PROFILE_RESULTS[func.__name__]["num_times_called"] += 1
 
-    return profiler
+    return wrapper
+
+@profile
+def my_func():
+    sum = 0
+    for i in xrange(1 << 25):
+        sum += i
+
+my_func()
+print PROFILE_RESULTS
