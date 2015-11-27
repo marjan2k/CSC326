@@ -32,7 +32,8 @@
     <div class="results">
       % for url in urls:
           <div class="result">
-              <a href="{{url}}">{{url}}</a><br>
+              <a href="{{url['doc']}}">{{url['title']}}</a><br>
+              <p> {{url['doc']}} </p>
           </div>
     	% end
     </div>

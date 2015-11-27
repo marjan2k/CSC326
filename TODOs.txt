@@ -1,0 +1,2 @@
+> Fix "displaying 2 out of 1 pages" edge case when directly entered into address bar
+> Fix duplicate urls with an extra "/" at the end

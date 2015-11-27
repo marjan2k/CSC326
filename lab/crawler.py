@@ -51,6 +51,7 @@ class crawler(object):
         self._word_id_cache = {}
         self._doc_index = {}
         self._url_pairs = []
+        self._doc_id_titles = {}
         self._visited_url_pairs = set()
 
         # functions to call when entering and exiting specific tags
@@ -194,6 +195,7 @@ class crawler(object):
     def _visit_title(self, elem):
         """Called when visiting the <title> tag."""
         title_text = self._text_of(elem).strip()
+        self._doc_id_titles[self._curr_doc_id] = title_text
         print "document title="+ repr(title_text)
 
         # TODO update document title for document id self._curr_doc_id
@@ -202,18 +204,20 @@ class crawler(object):
         """Called when visiting <a> tags."""
 
         dest_url = self._fix_url(self._curr_url, attr(elem,"href"))
-
-        #print "href="+repr(dest_url), \
+        dest_url_id = self.document_id(dest_url)
+        # print "href="+repr(dest_url), \
         #      "title="+repr(attr(elem,"title")), \
         #      "alt="+repr(attr(elem,"alt")), \
         #      "text="+repr(self._text_of(elem))
+        if dest_url_id not in self._doc_id_titles:
+            self._doc_id_titles[dest_url_id] = self._text_of(elem).strip()
 
         # add the just found URL to the url queue
         self._url_queue.append((dest_url, self._curr_depth))
 
         # add a link entry into the database from the current document to the
         # other document
-        self.add_link(self._curr_doc_id, self.document_id(dest_url))
+        self.add_link(self._curr_doc_id, dest_url_id)
 
         # TODO add title/alt/text to index for destination url
 
@@ -396,7 +400,7 @@ class crawler(object):
             for word, id in self._word_id_cache.items()]
         self.db.lexicon.insert_many(lexicon)
         # persist the doc index
-        doc_index = [{ "doc_id": id, "doc": doc }
+        doc_index = [{ "doc_id": id, "doc": doc, "title": self._doc_id_titles[int(id)] }
             for doc, id in self._doc_id_cache.items()]
         self.db.doc_index.insert_many(doc_index)
         # persist the inverted index
@@ -410,5 +414,5 @@ class crawler(object):
 
 if __name__ == "__main__":
     bot = crawler(None, "urls.txt")
-    bot.crawl(depth=1)
+    bot.crawl(depth=2)
     bot.persist_to_db()

@@ -36,7 +36,6 @@ def sort_using_page_rank_scores(url_ids):
 
 def resolve_urls(sorted_url_ids):
     results = [db.doc_index.find_one({ "doc_id": url_id}) for url_id in sorted_url_ids]
-    results = [result['doc'] for result in results]
     return results
 
 def fetch_urls(word):
@@ -145,7 +144,7 @@ def page():
     word = words[0] if len(words) > 0 else "" # Search using first word only for now
     start = int(request.query['start']) if 'start' in request.query else 0
     urls = fetch_urls(word)
-    
+
     name = "" # TODO(Zen): Replace with user name later
     original_qs = "keywords=" + "+".join(words)
     num_pages = len(urls) / 5
