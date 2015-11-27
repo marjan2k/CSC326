@@ -21,30 +21,42 @@ page_count = 0;
 conn = MongoClient()
 db = conn['crawler']
 
-def get_word_id_from_lexicon(word):
-    result = db.lexicon.find_one({ "word": word })
-    return result['word_id'] if result is not None else None
+def get_word_id_from_lexicon(words):
+    # find multiple words from mongodb and iterate through the cursor to retrive
+    result = [word['word_id'] for word in db.lexicon.find({"word": {"$in": words}})]
+    return result
 
-def get_url_ids_from_inverted_index(word_id):
-    result = db.inverted_index.find_one({ "word_id": word_id })
-    return result['doc_id_list']
+def get_url_ids_from_inverted_index(word_ids):
+    # TODO(zen): add more complicated ranking logic for multiple words
+    result = [doc['doc_id_list']
+        for doc in db.inverted_index.find({"word_id": {"$in": word_ids}})]
+    # flatten the results list
+    flattened = [i for sublist in result for i in sublist]
+    # remove duplicates
+    uniq = set()
+    result = []
+    for i in flattened:
+        if i not in uniq:
+            result.append(i)
+            uniq.add(i)
+    return result
 
 def sort_using_page_rank_scores(url_ids):
-    ranks = [db.page_rank.find_one({ "doc_id": url_id }) for url_id in url_ids]
-    ranks = { rank['doc_id']: rank['score'] for rank in ranks }
-    return sorted(url_ids, reverse=True, key=lambda url_id: ranks[url_id])
+    ranks = db.page_rank.find({ "doc_id": {"$in": url_ids }})
+    ranks = {rank['doc_id']: rank['score'] for rank in ranks}
+    return sorted(url_ids, reverse=True, key=lambda url_id: ranks[url_id] if url_id in ranks else 0)
 
 def resolve_urls(sorted_url_ids):
     results = [db.doc_index.find_one({ "doc_id": url_id}) for url_id in sorted_url_ids]
     return results
 
-def fetch_urls(word):
+def fetch_urls(words):
     # fetch word_id for the given word (for now -> first word in the search query)
-    word_id = get_word_id_from_lexicon(word)
+    word_ids = get_word_id_from_lexicon(words)
     # if urls for the word does not exist in the db, return no results
-    if word_id is None: return []
+    if len(word_ids) == 0: return []
     # fetch list of url ids containing the word_id from the inverted_index
-    url_ids = get_url_ids_from_inverted_index(word_id)
+    url_ids = get_url_ids_from_inverted_index(word_ids)
     # sort url_ids using the page rank scores
     sorted_url_ids = sort_using_page_rank_scores(url_ids)
     # resolved the url_ids to their respective urls
@@ -139,18 +151,17 @@ def get_word_count():
 
 @route('/results', method='GET')
 def page():
-    keywords = request.query['keywords']
-    words = keywords.lower().split()
-    word = words[0] if len(words) > 0 else "" # Search using first word only for now
+    keywords = request.query['keywords'].lower()
+    words = keywords.split()
     start = int(request.query['start']) if 'start' in request.query else 0
-    urls = fetch_urls(word)
+    urls = fetch_urls(words)
 
     name = "" # TODO(Zen): Replace with user name later
     original_qs = "keywords=" + "+".join(words)
     num_pages = len(urls) / 5
     if (len(urls) % 5 != 0): num_pages += 1
 
-    return template('results', name=name, curr_page=start/5, word=word, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
+    return template('results', name=name, curr_page=start/5, word=keywords, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
 
 @error(404)
 def error404(error):
