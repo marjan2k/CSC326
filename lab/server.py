@@ -21,10 +21,11 @@ history = {}
 page_count = 0;
 conn = MongoClient()
 db = conn['crawler']
+should_boost = True
 boost_factor = {
-    'title': 6.00,
-    'url': 4.00,
-    'word_frequency': 3.00
+    'title': 2.50,
+    'url': 5.00,
+    'word_frequency': 1.00
 }
 
 def get_word_id_from_lexicon(words):
@@ -44,6 +45,7 @@ def get_page_rank_scores(doc_list):
     return {rank['doc_id']: rank['score'] for rank in ranks}
 
 def boost_page_rank(words, word_index, ranks, docs, doc_list):
+    if not should_boost: return ranks
     # index doc_list by the word_id for quick lookup
     indexed_doc_list = {doc['word_id']: doc['doc_id_list'] for doc in doc_list}
     # index word_index by word -> word_id
@@ -56,9 +58,10 @@ def boost_page_rank(words, word_index, ranks, docs, doc_list):
         # iterate through search words and boost for each applicable factor
         for word in words:
             # boost for word occurance frequency
-            # count = _.find(indexed_doc_list[word_index[word]], {'doc_id': doc_id})['count']
-            # factor = boost_factor['word_frequency'] * count
-            # ranks[doc_id] *= factor
+            count = _.find(indexed_doc_list[word_index[word]], {'doc_id': doc_id})
+            count = count['count'] if count is not None else 0
+            factor = boost_factor['word_frequency'] * count
+            ranks[doc_id] *= factor
             # boost for title
             if text.find(word) != -1:
                 ranks[doc_id] *= boost_factor['title']
@@ -68,7 +71,6 @@ def boost_page_rank(words, word_index, ranks, docs, doc_list):
                 ranks[doc_id] *= boost_factor['url']
                 print 'can boost url!', url, word, doc_id, boost_factor['url']
 
-    print ranks
     return ranks
 
 def sort_and_resolve_urls(words, word_index, ranks, doc_list):
