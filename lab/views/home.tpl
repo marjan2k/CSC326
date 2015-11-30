@@ -8,6 +8,16 @@
     <link href='https://fonts.googleapis.com/css?family=Monda' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/static/style.css" media="screen" charset="utf-8" type='text/css'>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script>
+  $(function() {
+    $( "#search-input" ).autocomplete({
+        source: "autocomplete"
+    });
+  });
+  </script>
   </head>
   <body>
     <div class="logo">
@@ -27,7 +37,7 @@
     <div class="search-title">
         <h2 id="search-title"> enter your query. </h2>
     </div>
-    <div class="search-box">
+    <div class="search-box ui-widget">
         <form action="/results", method="GET">
             <input name="keywords" id="search-input" autofocus></input>
             <button type="submit" id="search-btn"> SUBMIT </button>

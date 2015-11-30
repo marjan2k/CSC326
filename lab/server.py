@@ -1,6 +1,8 @@
 import bottle
 import httplib2
 import pydash as _
+import re
+import json
 from pymongo import MongoClient
 from bottle import run, request, route, static_file, template, error
 from oauth2client.client import OAuth2WebServerFlow
@@ -97,6 +99,16 @@ def fetch_urls(words):
     # resolved the url_ids to their respective urls
     return sort_and_resolve_urls(words, word_index, ranks, doc_list)
 
+@route('/autocomplete')
+def autocomplete():
+    word = request.query['term']
+    # TODO(Zen):
+    # 1. create index for efficiency
+    # 2. some ranking of words possibly?
+    regx = re.compile("^" + word, re.IGNORECASE)
+    suggestions = [{"label": doc['word'], "value": doc['word']}
+        for doc in db.lexicon.find({"word": regx})[:10]]
+    return json.dumps(suggestions)
 @route('/static/<filename>')
 def serve_static(filename):
     return static_file(filename, root='public')
