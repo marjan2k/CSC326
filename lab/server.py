@@ -1,5 +1,6 @@
 import bottle
 import httplib2
+import pydash as _
 from pymongo import MongoClient
 from bottle import run, request, route, static_file, template, error
 from oauth2client.client import OAuth2WebServerFlow
@@ -20,47 +21,77 @@ history = {}
 page_count = 0;
 conn = MongoClient()
 db = conn['crawler']
+boost_factor = {
+    'title': 6.00,
+    'url': 4.00,
+    'word_frequency': 3.00
+}
 
 def get_word_id_from_lexicon(words):
     # find multiple words from mongodb and iterate through the cursor to retrive
-    result = [word['word_id'] for word in db.lexicon.find({"word": {"$in": words}})]
+    result = [word for word in db.lexicon.find({"word": {"$in": words}})]
     return result
 
-def get_url_ids_from_inverted_index(word_ids):
-    # TODO(zen): add more complicated ranking logic for multiple words
-    result = [doc['doc_id_list']
-        for doc in db.inverted_index.find({"word_id": {"$in": word_ids}})]
-    # flatten the results list
-    flattened = [i for sublist in result for i in sublist]
-    # remove duplicates
-    uniq = set()
-    result = []
-    for i in flattened:
-        if i not in uniq:
-            result.append(i)
-            uniq.add(i)
+def get_url_ids_from_inverted_index(word_list):
+    word_ids = _.pluck(word_list, 'word_id')
+    result = [doc for doc in db.inverted_index.find({"word_id": {"$in": word_ids}})]
     return result
 
-def sort_using_page_rank_scores(url_ids):
+def get_page_rank_scores(doc_list):
+    # flatten, pluck and remove duplicates from the results list
+    url_ids = _.chain(doc_list).pluck('doc_id_list').flatten().pluck('doc_id').uniq().value()
     ranks = db.page_rank.find({ "doc_id": {"$in": url_ids }})
-    ranks = {rank['doc_id']: rank['score'] for rank in ranks}
-    return sorted(url_ids, reverse=True, key=lambda url_id: ranks[url_id] if url_id in ranks else 0)
+    return {rank['doc_id']: rank['score'] for rank in ranks}
 
-def resolve_urls(sorted_url_ids):
-    results = [db.doc_index.find_one({ "doc_id": url_id}) for url_id in sorted_url_ids]
-    return results
+def boost_page_rank(words, word_index, ranks, docs, doc_list):
+    # index doc_list by the word_id for quick lookup
+    indexed_doc_list = {doc['word_id']: doc['doc_id_list'] for doc in doc_list}
+    # index word_index by word -> word_id
+    word_index = {word['word']: word['word_id'] for word in word_index}
+    # try to boost rank for each document
+    for doc in docs:
+        doc_id = doc['doc_id']
+        url = doc['doc']
+        text = doc['title'].lower()
+        # iterate through search words and boost for each applicable factor
+        for word in words:
+            # boost for word occurance frequency
+            # count = _.find(indexed_doc_list[word_index[word]], {'doc_id': doc_id})['count']
+            # factor = boost_factor['word_frequency'] * count
+            # ranks[doc_id] *= factor
+            # boost for title
+            if text.find(word) != -1:
+                ranks[doc_id] *= boost_factor['title']
+                print 'can boost title!', text, word, doc_id, boost_factor['title']
+            # boost for url
+            if url.find(word) != -1:
+                ranks[doc_id] *= boost_factor['url']
+                print 'can boost url!', url, word, doc_id, boost_factor['url']
+
+    print ranks
+    return ranks
+
+def sort_and_resolve_urls(words, word_index, ranks, doc_list):
+    # flatten, pluck and remove duplicates from the results list
+    url_ids = _.chain(doc_list).pluck('doc_id_list').flatten().pluck('doc_id').uniq().value()
+    # resolve all the doc ids to their respective document information
+    results = [doc for doc in db.doc_index.find({"doc_id": {"$in": url_ids}})]
+    # boost page rank as appropriate
+    ranks = boost_page_rank(words, word_index, ranks, results, doc_list)
+    # sort and return the results
+    return sorted(results, reverse=True, key=lambda doc: ranks[doc['doc_id']])
 
 def fetch_urls(words):
     # fetch word_id for the given word (for now -> first word in the search query)
-    word_ids = get_word_id_from_lexicon(words)
+    word_index = get_word_id_from_lexicon(words)
     # if urls for the word does not exist in the db, return no results
-    if len(word_ids) == 0: return []
+    if len(word_index) == 0: return []
     # fetch list of url ids containing the word_id from the inverted_index
-    url_ids = get_url_ids_from_inverted_index(word_ids)
+    doc_list = get_url_ids_from_inverted_index(word_index)
     # sort url_ids using the page rank scores
-    sorted_url_ids = sort_using_page_rank_scores(url_ids)
+    ranks = get_page_rank_scores(doc_list)
     # resolved the url_ids to their respective urls
-    return resolve_urls(sorted_url_ids)
+    return sort_and_resolve_urls(words, word_index, ranks, doc_list)
 
 @route('/static/<filename>')
 def serve_static(filename):

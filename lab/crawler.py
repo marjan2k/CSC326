@@ -358,10 +358,12 @@ class crawler(object):
         # of doc_ids that are associated with that word_id
         for (doc, words) in self._doc_index.iteritems():
             for w in words:
-                if (not w in inverted_index):
-                    inverted_index[w] = set()
-                inverted_index[w].add(doc)
-
+                if w not in inverted_index:
+                    inverted_index[w] = {}
+                if doc not in inverted_index[w]:
+                    inverted_index[w][doc] = 1
+                else:
+                    inverted_index[w][doc] += 1
         return inverted_index
 
     def get_resolved_inverted_index(self):
@@ -404,8 +406,12 @@ class crawler(object):
             for doc, id in self._doc_id_cache.items()]
         self.db.doc_index.insert_many(doc_index)
         # persist the inverted index
-        inverted_index = [{ "word_id": word_id, "doc_id_list": list(doc_ids) }
-            for word_id, doc_ids in self.get_inverted_index().items()]
+        inverted_index = [{
+            "word_id": word_id,
+            "doc_id_list": [{ 'doc_id': id, 'count': count}
+            for id, count in docs.items()]}
+            for word_id, docs in self.get_inverted_index().items()]
+
         self.db.inverted_index.insert_many(inverted_index)
         # persist the page ranks
         ranks = [{ "doc_id": doc_id, "score": score }

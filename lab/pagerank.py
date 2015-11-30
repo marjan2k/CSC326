@@ -1,15 +1,15 @@
 # Copyright (C) 2011 by Peter Goodman
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +33,14 @@ def page_rank(links, num_iterations=20, initial_pr=1.0):
     for (from_id,to_id) in links:
         num_outgoing_links[int(from_id)] += 1.0
         incoming_link_sets[to_id].add(int(from_id))
-    
+
+    # Begin PR hack:
+    # allow incoming links that don't have any outgoing links to still be ranked
+    for (_, to_id) in links:
+        if to_id not in num_outgoing_links:
+            num_outgoing_links[int(to_id)] = 1.0
+    # End PR hack
+
     # convert each set of incoming links into a numpy array
     for doc_id in incoming_link_sets:
         incoming_links[doc_id] = np.array([from_doc_id for from_doc_id in incoming_link_sets[doc_id]])
@@ -48,9 +55,12 @@ def page_rank(links, num_iterations=20, initial_pr=1.0):
             if len(incoming_links[doc_id]):
                 tail = damping_factor * partial_PR(incoming_links[doc_id]).sum()
             page_rank[doc_id] = lead + tail
-    
+
     return page_rank
 
 if __name__ == "__main__":
-    print page_rank([(1,2), (2, 4), (4, 3)])
+    # Possible improvements:
+    # - weighted rankings i.e. urls with higher pr score will have higher weight
+    #   when pointing to a url
+    print page_rank([(1,2), (2, 4), (4, 3), (1, 3), (2, 3), (3, 4), (1, 4)])
     print page_rank([(1,2), (2, 4), (4, 3), (3, 1), (3, 2)])
