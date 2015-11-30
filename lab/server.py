@@ -57,7 +57,9 @@ def boost_page_rank(words, word_index, ranks, docs, doc_list):
         text = doc['title'].lower()
         # iterate through search words and boost for each applicable factor
         for word in words:
-            # boost for word occurance frequency
+            # boost for word occurance frequency, this also accounts for
+            # intersection between words in a url, as a url with overlapping
+            # words will be boosted more by the virtue of word frequency
             count = _.find(indexed_doc_list[word_index[word]], {'doc_id': doc_id})
             count = count['count'] if count is not None else 0
             factor = boost_factor['word_frequency'] * count
