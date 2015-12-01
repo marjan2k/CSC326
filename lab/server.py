@@ -3,6 +3,7 @@ import httplib2
 import pydash as _
 import re
 import json
+import calculator
 from pymongo import MongoClient
 from bottle import run, request, route, static_file, template, error
 from oauth2client.client import OAuth2WebServerFlow
@@ -199,16 +200,23 @@ def get_word_count():
 @route('/results', method='GET')
 def page():
     keywords = request.query['keywords'].lower()
-    words = keywords.split()
-    start = int(request.query['start']) if 'start' in request.query else 0
-    urls = fetch_urls(words)
-
-    name = "" # TODO(Zen): Replace with user name later
-    original_qs = "keywords=" + "+".join(words)
-    num_pages = len(urls) / 5
-    if (len(urls) % 5 != 0): num_pages += 1
-
-    return template('results', name=name, curr_page=start/5, word=keywords, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
+    try:
+        # attempt query phrase interpretation (calculator)
+        calc = calculator.Calc()
+        tree = calculator.calc_grammar.parse(keywords)
+        res = calc.transform(tree)
+        return template('results', name="", qphase=True, query=keywords, result=res)
+    except:
+        # if query phrase interpretation fails, perform regular search
+        words = keywords.split()
+        start = int(request.query['start']) if 'start' in request.query else 0
+        urls = fetch_urls(words)
+        name = "" # TODO(Zen): Replace with user name later
+        original_qs = "keywords=" + "+".join(words)
+        num_pages = len(urls) / 5
+        if (len(urls) % 5 != 0): num_pages += 1
+        return template('results', qphase=False, name=name, curr_page=start/5,
+             word=keywords, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
 
 @error(404)
 def error404(error):

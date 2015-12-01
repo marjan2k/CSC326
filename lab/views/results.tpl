@@ -21,30 +21,35 @@
         % end
         <a href="/">Yase Search</a>
     </div>
-    <div class="result-title">
-        <h2 id="result-title"> Search for "{{word}}" </h2>
-        % if num_pages > 0:
-            <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
-        % else:
-            <p> No results found </p>
-        % end
-    </div>
-    <div class="results">
-      % for url in urls:
-          <div class="result">
-              <a href="{{url['doc']}}">{{url['title']}}</a><br>
-              <p> {{url['doc']}} </p>
-          </div>
-    	% end
-    </div>
+    % if qphase:
+        <div class="result-title">
+            <h2 id="result-title"> Result for {{query}} = </h2>
+            <h2> {{result}} </h2>
+        </div>
+    % else:
+        <div class="result-title">
+            <h2 id="result-title"> Search for "{{word}}" </h2>
+            % if num_pages > 0:
+                <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
+            % else:
+                <p> No results found </p>
+            % end
+        </div>
+        <div class="results">
+          % for url in urls:
+              <div class="result">
+                  <a href="{{url['doc']}}">{{url['title']}}</a><br>
+                  <p> {{url['doc']}} </p>
+              </div>
+        	% end
+        </div>
+        <div class="pages">
+          % for i in range(num_pages):
+            % link = "/results?" + qs + "&start=" + str(i * 5)
+            <a href="{{link}}"> {{i+1}}</a>
+          % end
+        </div>
 
-    <div class="pages">
-      % for i in range(num_pages):
-        % link = "/results?" + qs + "&start=" + str(i * 5)
-        <a href="{{link}}"> {{i+1}}</a>
-      % end
-    </div>
-
-  </body>
-
+      </body>
+    % end
 </html>
