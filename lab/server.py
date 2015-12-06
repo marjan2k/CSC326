@@ -4,6 +4,7 @@ import pydash as _
 import re
 import json
 import calculator
+import spell_corrector
 from gevent import monkey; monkey.patch_all()
 from pymongo import MongoClient
 from bottle import run, request, route, static_file, template, error
@@ -34,7 +35,10 @@ boost_factor = {
 
 def get_word_id_from_lexicon(words):
     # find multiple words from mongodb and iterate through the cursor to retrive
-    result = [word for word in db.lexicon.find({"word": {"$in": words}})]
+    corrected_words = [spell_corrector.correct(word) for word in words]
+    print 'before', words
+    print 'after', corrected_words
+    result = [word for word in db.lexicon.find({"word": {"$in": corrected_words}})]
     return result
 
 def get_url_ids_from_inverted_index(word_list):
@@ -48,7 +52,7 @@ def get_page_rank_scores(doc_list):
     ranks = db.page_rank.find({ "doc_id": {"$in": url_ids }})
     return {rank['doc_id']: rank['score'] for rank in ranks}
 
-def boost_page_rank(words, word_index, ranks, docs, doc_list):
+def boost_page_rank(ranks, word_index, docs, doc_list):
     if not should_boost: return ranks
     # index doc_list by the word_id for quick lookup
     indexed_doc_list = {doc['word_id']: doc['doc_id_list'] for doc in doc_list}
@@ -60,7 +64,7 @@ def boost_page_rank(words, word_index, ranks, docs, doc_list):
         url = doc['doc']
         text = doc['title'].lower()
         # iterate through search words and boost for each applicable factor
-        for word in words:
+        for word in word_index:
             # boost for word occurance frequency, this also accounts for
             # intersection between words in a url, as a url with overlapping
             # words will be boosted more by the virtue of word frequency
@@ -85,7 +89,7 @@ def sort_and_resolve_urls(words, word_index, ranks, doc_list):
     # resolve all the doc ids to their respective document information
     results = [doc for doc in db.doc_index.find({"doc_id": {"$in": url_ids}})]
     # boost page rank as appropriate
-    ranks = boost_page_rank(words, word_index, ranks, results, doc_list)
+    ranks = boost_page_rank(ranks, word_index, results, doc_list)
     # sort and return the results
     return sorted(results, reverse=True, key=lambda doc: ranks[doc['doc_id']])
 
@@ -117,6 +121,7 @@ def serve_static(filename):
 
 @route('/')
 def get_homepage():
+    print spell_corrector.correct('pahng')
     session = bottle.request.environ.get('beaker.session')
     print session
     # retrieve user info from session object, set to defaults if it doesn't exist
