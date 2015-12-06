@@ -16,7 +16,7 @@ PlyPlus==0.6.2
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
 pydash==3.4.1
-pymongo==2.8
+pymongo==3.1.1
 rsa==3.2
 simplejson==3.8.0
 six==1.10.0
