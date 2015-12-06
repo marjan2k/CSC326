@@ -3,8 +3,12 @@ Beaker==1.7.0
 BeautifulSoup==3.2.1
 bottle==0.12.8
 certifi==2015.9.6.2
+Cython==0.23.4
+gevent==1.1rc2.dev0
 google-api-python-client==1.4.2
+greenlet==0.4.9
 httplib2==0.9.2
+motor==0.5
 numpy==1.10.1
 oauth2client==1.5.1
 ply==3.8
@@ -12,7 +16,7 @@ PlyPlus==0.6.2
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
 pydash==3.4.1
-pymongo==3.1
+pymongo==2.8
 rsa==3.2
 simplejson==3.8.0
 six==1.10.0

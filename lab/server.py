@@ -4,6 +4,7 @@ import pydash as _
 import re
 import json
 import calculator
+from gevent import monkey; monkey.patch_all()
 from pymongo import MongoClient
 from bottle import run, request, route, static_file, template, error
 from oauth2client.client import OAuth2WebServerFlow
@@ -226,4 +227,4 @@ def error404(error):
         </h1>
     """
 
-run(app=app, host='0.0.0.0', port=8080, debug=True)
+run(app=app, host='0.0.0.0', port=8080, debug=True, server='gevent')
