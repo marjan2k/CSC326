@@ -40,7 +40,7 @@ def create():
 
 	#Create Security Group
 	try:
-		security_group = conn.create_security_group('csc326-group28-test','Test instance to host web server') #return typeboto.ec2.securitygroup.SecurityGroup
+		security_group = conn.create_security_group('csc326-group28','Instance for hosting web application') #return typeboto.ec2.securitygroup.SecurityGroup
 	except Exception as exception:
 		for i in conn.get_all_security_groups():
 			if i.name == 'csc326-group28':
