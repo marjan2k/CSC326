@@ -154,6 +154,10 @@ body {
     padding-right: 10px;
 }
 
+.results p {
+    word-wrap: break-word;
+}
+
 #history {
     font-size: 1.5em !important;
 }
