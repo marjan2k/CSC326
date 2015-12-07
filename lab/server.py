@@ -225,7 +225,7 @@ def page():
         # additional page for any remainders
         if (len(urls) % 5 != 0): num_pages += 1
         # create diff between corrected and original words
-        diff = [1 if corrected_words[i] != words[i] else 0 for i in range(len(corrected_words))]
+        diff = filter(lambda i: corrected_words[i] != words[i], range(len(corrected_words)))
         # render the template!
         return template('results', qphase=False, name=name, curr_page=start/5,
                          words=words, corrected_words=corrected_words, hasDiff=bool(len(diff)),
