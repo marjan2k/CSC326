@@ -33,6 +33,21 @@ boost_factor = {
     'word_frequency': 1.00
 }
 
+def create_indexes():
+    """ Create database indexes for faster lookup """
+    # index lexicon by word
+    db.lexicon.create_index("word")
+    db.lexicon.ensure_index("word")
+    # index inverted_index by word_id
+    db.inverted_index.create_index("word_id")
+    db.inverted_index.ensure_index("word_id")
+    # index page_rank by doc_id
+    db.page_rank.create_index("doc_id")
+    db.page_rank.ensure_index("doc_id")
+    # index doc_index by doc_id
+    db.doc_index.create_index("doc_id")
+    db.doc_index.ensure_index("doc_id")
+
 def get_word_id_from_lexicon(words):
     # find multiple words from mongodb and iterate through the cursor to retrive
     result = [word for word in db.lexicon.find({"word": {"$in": words}})]
@@ -239,4 +254,5 @@ def error404(error):
         </h1>
     """
 
+create_indexes()
 run(app=app, host='0.0.0.0', port=8080, debug=True, server='gevent')
