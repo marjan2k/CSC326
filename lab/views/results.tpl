@@ -21,6 +21,12 @@
             </div>
         % end
         <a href="/">Yase Search</a>
+        <div class="search-box ui-widget">
+          <form action="/results", method="GET">
+              <input name="keywords" id="search-input" autofocus></input>
+              <button type="submit" id="search-btn"> SUBMIT </button>
+          </form>
+        </div>
     </div>
     % if qphase:
         <div class="result-title">
