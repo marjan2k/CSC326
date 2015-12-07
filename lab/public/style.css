@@ -158,6 +158,13 @@ body {
     word-wrap: break-word;
 }
 
+@media screen and (max-width: 900px) {
+    .profile {
+        position: relative;
+        margin: 0 auto;
+    }
+}
+
 #history {
     font-size: 1.5em !important;
 }
