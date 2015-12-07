@@ -35,10 +35,7 @@ boost_factor = {
 
 def get_word_id_from_lexicon(words):
     # find multiple words from mongodb and iterate through the cursor to retrive
-    corrected_words = [spell_corrector.correct(word) for word in words]
-    print 'before', words
-    print 'after', corrected_words
-    result = [word for word in db.lexicon.find({"word": {"$in": corrected_words}})]
+    result = [word for word in db.lexicon.find({"word": {"$in": words}})]
     return result
 
 def get_url_ids_from_inverted_index(word_list):
@@ -115,6 +112,7 @@ def autocomplete():
     suggestions = [{"label": doc['word'], "value": doc['word']}
         for doc in db.lexicon.find({"word": regx})[:10]]
     return json.dumps(suggestions)
+
 @route('/static/<filename>')
 def serve_static(filename):
     return static_file(filename, root='public')
@@ -215,14 +213,23 @@ def page():
     except:
         # if query phrase interpretation fails, perform regular search
         words = keywords.split()
+        corrected_words = [spell_corrector.correct(word) for word in words]
+        print 'before correction', words
+        print 'after correction', corrected_words
         start = int(request.query['start']) if 'start' in request.query else 0
-        urls = fetch_urls(words)
+        urls = fetch_urls(corrected_words)
         name = "" # TODO(Zen): Replace with user name later
         original_qs = "keywords=" + "+".join(words)
+        # calculate number of pages
         num_pages = len(urls) / 5
+        # additional page for any remainders
         if (len(urls) % 5 != 0): num_pages += 1
+        # create diff between corrected and original words
+        diff = [1 if corrected_words[i] != words[i] else 0 for i in range(len(corrected_words))]
+        # render the template!
         return template('results', qphase=False, name=name, curr_page=start/5,
-             word=keywords, urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
+                         words=words, corrected_words=corrected_words, hasDiff=bool(len(diff)),
+                         urls=urls[start:start+5], qs=original_qs, num_pages=num_pages)
 
 @error(404)
 def error404(error):

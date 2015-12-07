@@ -28,7 +28,12 @@
         </div>
     % else:
         <div class="result-title">
-            <h2 id="result-title"> Search for "{{word}}" </h2>
+            % if hasDiff:
+                <h2 id="result-title">Search for "{{" ".join(corrected_words)}}" </h2>
+                <span><i>corrected from: {{" ".join(words)}}</i></span>
+            % else:
+                <h2 id="result-title"> Search for "{{" ".join(corrected_words)}}" </h2>
+            % end
             % if num_pages > 0:
                 <p> Displaying page {{curr_page + 1}} out of {{num_pages}} pages </p>
             % else:
